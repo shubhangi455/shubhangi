@@ -3,8 +3,6 @@ name: Shubhangi CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build-and-deploy:
@@ -14,17 +12,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Validate HTML file exists
+      - name: Build Docker image
+        run: docker build -t shubhangi-app:latest .
+
+      - name: Test image runs
         run: |
-          if [ -f index.html ]; then
-            echo "index.html found!"
-          else
-            echo "index.html missing!"
-            exit 1
-          fi
-
-      - name: Show file contents
-        run: cat index.html
-
-      - name: Pipeline success
-        run: echo "Shubhangi's static page pipeline passed!"
+          docker run -d -p 8080:80 shubhangi-app:latest
+          sleep 3
+          curl http://localhost:8080 | grep "Shubhangi"
+          echo "Docker image working!"
